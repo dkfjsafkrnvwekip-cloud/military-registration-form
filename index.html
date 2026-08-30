@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ลงทะเบียนรับเข้ากลุ่มลับ ทหารร้อย บก.1/69</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Tahoma', 'Arial', sans-serif;
+        }
+        body {
+            background-color: #1a237e;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background-color: #0d1b2a;
+            border: 2px solid #e0a96d;
+            border-radius: 12px;
+            padding: 25px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+        }
+        h2 {
+            text-align: center;
+            color: #e0a96d;
+            margin-top: 0;
+            border-bottom: 1px solid #e0a96d;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #415a77;
+            border-radius: 6px;
+            background-color: #1b263b;
+            color: #fff;
+            font-size: 16px;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #e0a96d;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #e0a96d;
+            color: #0d1b2a;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        button:hover {
+            background-color: #cca000;
+        }
+        .history-section {
+            margin-top: 30px;
+        }
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .clear-btn {
+            background-color: #c0392b;
+            color: white;
+            padding: 5px 10px;
+            font-size: 12px;
+            width: auto;
+        }
+        .clear-btn:hover {
+            background-color: #e74c3c;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        li {
+            background-color: #1b263b;
+            border-left: 4px solid #e0a96d;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+        }
+        .time-stamp {
+            color: #a3b18a;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>ระบบรับเข้ากลุ่มลับ<br>ทหารร้อย บก.1/69</h2>
+    
+    <div class="form-group">
+        <label for="fullName">ใส่ชื่อ-นามสกุล เพื่อรับเข้ากลุ่ม:</label>
+        <input type="text" id="fullName" placeholder="กรอกชื่อ-นามสกุล..." autocomplete="off">
+    </div>
+    
+    <button onclick="saveData()">บันทึกข้อมูล</button>
+
+    <div class="history-section">
+        <div class="history-header">
+            <h3>ประวัติการลงทะเบียน</h3>
+            <button class="clear-btn" onclick="clearHistory()">ลบประวัติทั้งหมด</button>
+        </div>
+        <ul id="historyList"></ul>
+    </div>
+</div>
+
+<script>
+    // ดึงข้อมูลประวัติย้อนหลังมาแสดงเมื่อโหลดหน้าเว็บ
+    document.addEventListener("DOMContentLoaded", displayHistory);
+
+    function saveData() {
+        const nameInput = document.getElementById("fullName");
+        const nameValue = nameInput.value.trim();
+
+        if (nameValue === "") {
+            alert("กรุณากรอกชื่อก่อนทำการบันทึก!");
+            return;
+        }
+
+        // ดึง วัน เดือน ปี เวลา ปัจจุบัน
+        const now = new Date();
+        const dateOptions = { year: 'numeric', month: 'short', day: 'numeric' };
+        const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
+        const formattedDate = now.toLocaleDateString('th-TH', dateOptions);
+        const formattedTime = now.toLocaleTimeString('th-TH', timeOptions);
+        const fullDateTime = `${formattedDate} เวลา ${formattedTime} น.`;
+
+        // สร้าง Object ข้อมูล
+        const record = {
+            name: nameValue,
+            datetime: fullDateTime
+        };
+
+        // ดึงประวัติเดิมจาก LocalStorage
+        let history = JSON.parse(localStorage.getItem("militaryRecords")) || [];
+        
+        // เพิ่มข้อมูลใหม่ไปด้านหน้าสุด
+        history.unshift(record);
+
+        // บันทึกลง LocalStorage
+        localStorage.setItem("militaryRecords", JSON.stringify(history));
+
+        // ล้างช่องกรอกข้อมูลและอัปเดตรายการ
+        nameInput.value = "";
+        alert("บันทึกข้อมูลเรียบร้อยแล้ว!");
+        displayHistory();
+    }
+
+    function displayHistory() {
+        const historyList = document.getElementById("historyList");
+        historyList.innerHTML = "";
+        
+        let history = JSON.parse(localStorage.getItem("militaryRecords")) || [];
+
+        if (history.length === 0) {
+            historyList.innerHTML = "<li style='justify-content: center; color: #888;'>ยังไม่มีประวัติการบันทึก</li>";
+            return;
+        }
+
+        history.forEach(item => {
+            const li = document.createElement("li");
+            li.innerHTML = `
+                <span><strong>${item.name}</strong></span>
+                <span class="time-stamp">${item.datetime}</span>
+            `;
+            historyList.appendChild(li);
+        });
+    }
+
+    function clearHistory() {
+        if (confirm("คุณต้องการลบประวัติการลงทะเบียนทั้งหมดใช่หรือไม่?")) {
+            localStorage.removeItem("militaryRecords");
+            displayHistory();
+        }
+    }
+</script>
+
+</body>
+</html>
